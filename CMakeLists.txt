@@ -106,6 +106,9 @@ endif()
 
 add_subdirectory("${TENSORFLOW_SOURCE_DIR}/tensorflow/lite" "${CMAKE_BINARY_DIR}/tensorflow-lite" EXCLUDE_FROM_ALL)
 SET(TFLITE_INCLUDE_DIRS "${TFLITE_INCLUDE_DIRS}" "${TENSORFLOW_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/flatbuffers/include")
+SET(TFLITE_LIBS "${CMAKE_BINARY_DIR}/tensorflow-lite")
+
+message(TTT "${TFLITE_LIBS}" FFF)
 
 #########################################################
 
@@ -128,7 +131,14 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data/models DESTINATION ${CMAKE_CURRENT_BI
 
 include(CMakePrintHelpers)
 include(FetchContent)
-find_package(Boost)
+find_package(Boost
+  COMPONENTS program_options
+)
+
+message(BBB "${Boost_FOUND}" FFF)
+
+message(BBB "${Boost_LIBRARIES}" FFF)
+message(BBB "${Boost_PROGRAM_OPTIONS_LIBRARY}" FFF)
 
 include(cmake/external.cmake)
 
@@ -167,9 +177,18 @@ target_include_directories (xmorphy_lib SYSTEM PUBLIC
     ${incbin_SOURCE_DIR}
     ${tabulate_SOURCE_DIR}/include
     ${fasttext_SOURCE_DIR}/src
+    ${fdeep_SOURCE_DIR}/include
+    ${functionalplus_SOURCE_DIR}/include
+    ${nlohmann_json_SOURCE_DIR}/include
+    ${eigen_SOURCE_DIR}
 
 #    ${BOOST_HEADERONLY_INCLUDE_DIR}
     PRIVATE ${ICU_INCLUDE_DIRS}
+)
+
+target_link_directories(xmorphy_lib PUBLIC
+  ${TFLITE_LIBS}
+  ${fasttext_BINARY_DIR}
 )
 
 #target_include_directories(Xmorphy SYSTEM PUBLIC
@@ -181,6 +200,8 @@ target_include_directories (xmorphy_lib SYSTEM PUBLIC
 #  ${incbin_INCLUDE_DIR}
 #  )
 
+message("FOO ${BOOST_LIBRARIES} BAR")
+message("FOO ${BOOST_INCLUDE_DIRS} BAR")
 #target_compile_options(tensorflow-lite PRIVATE -Wno-unused -Wno-error)
 
 #if (NOT BUILD_ONLY_PYTHON_LIBRARY)
@@ -189,7 +210,10 @@ target_include_directories (xmorphy_lib SYSTEM PUBLIC
     set(CLI_SOURCE_FILES programs/cli/main.cpp)
     add_executable(xmorphy ${CLI_SOURCE_FILES})
     #target_link_libraries(xmorphy PRIVATE Boost_program_options)
-    target_link_libraries(xmorphy PRIVATE xmorphy_lib -static-libgcc -static-libstdc++ mimalloc-static)
+    target_link_libraries(xmorphy
+      PRIVATE xmorphy_lib mimalloc-static
+      PUBLIC ${ICU_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} tensorflow-lite fasttext
+    )
 
     #add_sanitizers(xmorphy)
 

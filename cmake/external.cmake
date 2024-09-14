@@ -70,3 +70,115 @@ else()
     #add_link_options(-L${incbin_BINARY_DIR}/lib)
 endif()
 
+find_library(XM_FUNCTIONALPLUS functionalplus)
+if (XM_FUNCTIONALPLUS)
+
+else()
+    handle_missing_library("functionalplus")
+    FetchContent_Declare(
+            functionalplus
+            GIT_REPOSITORY https://github.com/Dobiasd/FunctionalPlus.git
+            GIT_TAG v0.2.25
+    )
+    message(STATUS "---------------------")
+    FetchContent_MakeAvailable(functionalplus)
+
+#    set(FunctionalPlus_DIR ${functionalplus_SOURCE_DIR}/cmake)
+
+    message("${functionalplus_SOURCE_DIR}")
+    message("${functionalplus_BINARY_DIR}")
+endif()
+
+find_library(XM_NLOHMANN_JSON nlohmann_json)
+if (XM_NLOHMANN_JSON)
+
+else()
+    handle_missing_library("nlohmann_json")
+    FetchContent_Declare(
+            nlohmann_json
+            GIT_REPOSITORY https://github.com/nlohmann/json.git
+            GIT_TAG v3.11.3
+    )
+    message(STATUS "---------------------")
+    FetchContent_MakeAvailable(nlohmann_json)
+
+ #   set(nlohmann_json_DIR ${nlohmann_json_SOURCE_DIR}/cmake)
+
+
+    message("${nlohmann_json_SOURCE_DIR}")
+    message("${nlohmann_json_BINARY_DIR}")
+endif()
+
+
+
+find_library(XM_FDEEP fdeep)
+if (XM_FDEEP)
+
+else()
+    handle_missing_library("fdeep")
+    FetchContent_Declare(
+            fdeep
+            GIT_REPOSITORY https://github.com/Dobiasd/frugally-deep.git
+            GIT_TAG v0.16.0
+    )
+    message(STATUS "---------------------")
+
+    FetchContent_GetProperties(fdeep)
+    if(NOT fdeep_POPULATED)
+      FetchContent_Populate(fdeep)
+    endif()
+
+
+
+    FetchContent_MakeAvailable(fdeep)
+    #include_directories(${incbin_BINARY_DIR}/src/include)
+    message("${fdeep_SOURCE_DIR}")
+    message("${fdeep_BINARY_DIR}")
+    #add_definitions(-DXM_INCBIN_LIB_DIR="${incbin_BINARY_DIR}/lib")
+    #add_definitions(-DXM_INCBIN_INCLUDE_DIR="${incbin_BINARY_DIR}/src/include")
+    #add_link_options(-L${incbin_BINARY_DIR}/lib)
+endif()
+
+
+find_library(XM_EIGEN eigen)
+if (XM_EIGEN)
+
+else()
+    handle_missing_library("eigen")
+    FetchContent_Declare(
+            eigen
+            GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+            GIT_TAG 3.4.0
+    )
+    message(STATUS "---------------------")
+    FetchContent_MakeAvailable(eigen)
+
+ #   set(nlohmann_json_DIR ${nlohmann_json_SOURCE_DIR}/cmake)
+
+
+    message("${eigen_SOURCE_DIR}")
+    message("${eigen_BINARY_DIR}")
+endif()
+
+
+find_library(XM_MIMALLOC mimalloc)
+if (XM_MIMALLOC)
+
+else()
+    handle_missing_library("mimalloc")
+    FetchContent_Declare(
+            mimalloc
+            GIT_REPOSITORY https://github.com/microsoft/mimalloc.git
+            GIT_TAG v2.1.7
+    )
+    message(STATUS "---------------------")
+    FetchContent_MakeAvailable(mimalloc)
+
+ #   set(nlohmann_json_DIR ${nlohmann_json_SOURCE_DIR}/cmake)
+
+
+    message("${mimalloc_SOURCE_DIR}")
+    message("${mimalloc_BINARY_DIR}")
+endif()
+
+
