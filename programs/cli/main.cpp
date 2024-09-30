@@ -82,7 +82,7 @@ bool processCommandLineOptions(int argc, char ** argv, Options & opts)
     return true;
 }
 
-std::string processSentence(std::string& sentence) {
+std::string processSentence(std::string& sentence, Options& opts, FormaterPtr& formatter) {
     Tokenizer tok;
 
     TFDisambiguator tf_disambig;
@@ -151,7 +151,7 @@ int main(int argc, char ** argv)
         if (sentence.empty())
             continue;
 
-        (*os) << processSentence(sentence) << std::endl;
+        (*os) << processSentence(sentence, opts, formatter) << std::endl;
 
         os->flush();
     } while(!ssplitter.eof());
