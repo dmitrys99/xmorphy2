@@ -83,6 +83,13 @@ bool processCommandLineOptions(int argc, char ** argv, Options & opts)
 }
 
 std::string processSentence(std::string& sentence) {
+    Tokenizer tok;
+
+    TFDisambiguator tf_disambig;
+    TFMorphemicSplitter morphemic_splitter;
+    Processor analyzer;
+    SingleWordDisambiguate disamb;
+    TFJoinedModel joiner;
     std::vector<TokenPtr> tokens = tok.analyze(UniString(sentence));
     std::vector<WordFormPtr> forms = analyzer.analyze(tokens);
 
@@ -128,14 +135,8 @@ int main(int argc, char ** argv)
     {
         os = new ofstream(opts.output_file);
     }
-    Tokenizer tok;
-
-    TFDisambiguator tf_disambig;
-    TFMorphemicSplitter morphemic_splitter;
     SentenceSplitter ssplitter(*is);
-    Processor analyzer;
-    SingleWordDisambiguate disamb;
-    TFJoinedModel joiner;
+
     FormaterPtr formater;
     if (opts.format == "TSV")
         formater = std::make_unique<TSVFormater>(opts.morphemic_split);
