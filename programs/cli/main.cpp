@@ -115,7 +115,7 @@ std::string processSentence(std::string& sentence, Options& opts, FormaterPtr& f
         }
     }
 
-    return formater->format(forms);
+    return formatter->format(forms);
 }
 
 int main(int argc, char ** argv)
