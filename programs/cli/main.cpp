@@ -137,13 +137,13 @@ int main(int argc, char ** argv)
     }
     SentenceSplitter ssplitter(*is);
 
-    FormaterPtr formater;
+    FormaterPtr formatter;
     if (opts.format == "TSV")
-        formater = std::make_unique<TSVFormater>(opts.morphemic_split);
+        formatter = std::make_unique<TSVFormater>(opts.morphemic_split);
     else if (opts.format == "JSONEachSentence")
-        formater = std::make_unique<JSONEachSentenceFormater>(opts.morphemic_split);
+        formatter = std::make_unique<JSONEachSentenceFormater>(opts.morphemic_split);
     else
-        formater = std::make_unique<PrettyFormater>(opts.morphemic_split);
+        formatter = std::make_unique<PrettyFormater>(opts.morphemic_split);
     do
     {
         std::string sentence;
