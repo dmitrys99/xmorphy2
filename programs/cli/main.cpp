@@ -82,6 +82,35 @@ bool processCommandLineOptions(int argc, char ** argv, Options & opts)
     return true;
 }
 
+std::string processSentence(std::string& sentence) {
+    std::vector<TokenPtr> tokens = tok.analyze(UniString(sentence));
+    std::vector<WordFormPtr> forms = analyzer.analyze(tokens);
+
+    if (opts.disambiguate)
+        disamb.disambiguate(forms);
+
+    bool joined_model_failed = true;
+    if (opts.morphemic_split && opts.context_disambiguate)
+    {
+        joined_model_failed = !joiner.disambiguateAndMorphemicSplit(forms);
+    }
+
+    if (joined_model_failed && (opts.morphemic_split || opts.context_disambiguate))
+    {
+        tf_disambig.disambiguate(forms);
+    }
+
+    if (opts.morphemic_split && (!opts.context_disambiguate || joined_model_failed))
+    {
+        for (auto & form : forms)
+        {
+            morphemic_splitter.split(form);
+        }
+    }
+
+    return formater->format(forms);
+}
+
 int main(int argc, char ** argv)
 {
     Options opts;
@@ -121,32 +150,7 @@ int main(int argc, char ** argv)
         if (sentence.empty())
             continue;
 
-        std::vector<TokenPtr> tokens = tok.analyze(UniString(sentence));
-        std::vector<WordFormPtr> forms = analyzer.analyze(tokens);
-
-        if (opts.disambiguate)
-            disamb.disambiguate(forms);
-
-        bool joined_model_failed = true;
-        if (opts.morphemic_split && opts.context_disambiguate)
-        {
-            joined_model_failed = !joiner.disambiguateAndMorphemicSplit(forms);
-        }
-
-        if (joined_model_failed && (opts.morphemic_split || opts.context_disambiguate))
-        {
-            tf_disambig.disambiguate(forms);
-        }
-
-        if (opts.morphemic_split && (!opts.context_disambiguate || joined_model_failed))
-        {
-            for (auto & form : forms)
-            {
-                morphemic_splitter.split(form);
-            }
-        }
-
-        (*os) << formater->format(forms) << std::endl;
+        (*os) << processSentence(sentence) << std::endl;
 
         os->flush();
     } while(!ssplitter.eof());
