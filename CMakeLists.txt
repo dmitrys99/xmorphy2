@@ -182,6 +182,8 @@ target_include_directories (xmorphy_lib SYSTEM PUBLIC
     ${nlohmann_json_SOURCE_DIR}/include
     ${eigen_SOURCE_DIR}
 
+    ${civetweb_SOURCE_DIR}/include
+
 #    ${BOOST_HEADERONLY_INCLUDE_DIR}
     PRIVATE ${ICU_INCLUDE_DIRS}
 )
@@ -189,6 +191,7 @@ target_include_directories (xmorphy_lib SYSTEM PUBLIC
 target_link_directories(xmorphy_lib PUBLIC
   ${TFLITE_LIBS}
   ${fasttext_BINARY_DIR}
+  ${civetweb_BINARY_DIR}/src
 )
 
 #target_include_directories(Xmorphy SYSTEM PUBLIC
@@ -211,8 +214,8 @@ message("FOO ${BOOST_INCLUDE_DIRS} BAR")
     add_executable(xmorphy ${CLI_SOURCE_FILES})
     #target_link_libraries(xmorphy PRIVATE Boost_program_options)
     target_link_libraries(xmorphy
-      PRIVATE xmorphy_lib mimalloc-static
-      PUBLIC ${ICU_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} tensorflow-lite fasttext
+      PRIVATE xmorphy_lib mimalloc-static 
+      PUBLIC ${ICU_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} tensorflow-lite fasttext libcivetweb.a libcivetweb-cpp.a
     )
 
     #add_sanitizers(xmorphy)

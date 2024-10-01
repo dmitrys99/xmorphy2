@@ -181,4 +181,28 @@ else()
     message("${mimalloc_BINARY_DIR}")
 endif()
 
+find_library(XM_CIVETWEB civetweb)
+if (XM_CIVETWEB)
 
+else()
+    handle_missing_library("civetweb")
+    FetchContent_Declare(
+            civetweb
+            GIT_REPOSITORY https://github.com/civetweb/civetweb.git
+            GIT_TAG v1.16
+    )
+    message(STATUS "---------------------")
+
+    #set(CIVETWEB_ENABLE_LUA OFF)
+    #set(CIVETWEB_ENABLE_IPV6 OFF)
+    #set(CIVETWEB_SERVE_NO_FILES ON)
+    #set(CIVETWEB_BUILD_TESTING ON)
+
+    FetchContent_MakeAvailable(civetweb)
+
+ #   set(nlohmann_json_DIR ${nlohmann_json_SOURCE_DIR}/cmake)
+
+
+    message("${civetweb_SOURCE_DIR}")
+    message("${civetweb_BINARY_DIR}")
+endif()

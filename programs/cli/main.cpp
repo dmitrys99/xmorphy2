@@ -21,6 +21,8 @@
 #include <xmorphy/ml/TFMorphemicSplitter.h>
 #include <boost/program_options.hpp>
 
+#include "CivetServer.h"
+
 using namespace X;
 using namespace std;
 
@@ -40,17 +42,61 @@ class RootHandler : public CivetHandler
     }
 };
 
+struct Options
+{
+    std::string input_file;
+    std::string output_file;
+    bool disambiguate = false;
+    bool context_disambiguate = false;
+    bool morphemic_split = false;
+    std::string format;
+    int port = 8081;
+    bool web_mode = false;
+};
+
+std::string processSentence(std::string& sentence, Options& opts, FormaterPtr& formatter) {
+    Tokenizer tok;
+
+    TFDisambiguator tf_disambig;
+    TFMorphemicSplitter morphemic_splitter;
+    Processor analyzer;
+    SingleWordDisambiguate disamb;
+    TFJoinedModel joiner;
+    std::vector<TokenPtr> tokens = tok.analyze(UniString(sentence));
+    std::vector<WordFormPtr> forms = analyzer.analyze(tokens);
+
+    if (opts.disambiguate)
+        disamb.disambiguate(forms);
+
+    bool joined_model_failed = true;
+    if (opts.morphemic_split && opts.context_disambiguate)
+    {
+        joined_model_failed = !joiner.disambiguateAndMorphemicSplit(forms);
+    }
+
+    if (joined_model_failed && (opts.morphemic_split || opts.context_disambiguate))
+    {
+        tf_disambig.disambiguate(forms);
+    }
+
+    if (opts.morphemic_split && (!opts.context_disambiguate || joined_model_failed))
+    {
+        for (auto & form : forms)
+        {
+            morphemic_splitter.split(form);
+        }
+    }
+
+    return formatter->format(forms);
+}
 
 class WordsHandler : public CivetHandler
 {
     private:
-        FormaterPtr* formatter;
-        Options* opts;
+        FormaterPtr& formatter;
+        Options& opts;
     public:
-    WordsHandler(Options& o, FormaterPtr& f) {
-        formatter = f;
-        opts = o;
-    }
+    WordsHandler(Options& o, FormaterPtr& f) : formatter(f), opts(o) { }
 
     bool handlePost(CivetServer *server, struct mg_connection *conn)
     {
@@ -67,19 +113,6 @@ class WordsHandler : public CivetHandler
         return true;
     }
 
-};
-
-
-struct Options
-{
-    std::string input_file;
-    std::string output_file;
-    bool disambiguate = false;
-    bool context_disambiguate = false;
-    bool morphemic_split = false;
-    std::string format;
-    int port = 8081;
-    bool web_mode = false;
 };
 
 namespace po = boost::program_options;
@@ -134,47 +167,12 @@ bool processCommandLineOptions(int argc, char ** argv, Options & opts)
     return true;
 }
 
-std::string processSentence(std::string& sentence, Options& opts, FormaterPtr& formatter) {
-    Tokenizer tok;
 
-    TFDisambiguator tf_disambig;
-    TFMorphemicSplitter morphemic_splitter;
-    Processor analyzer;
-    SingleWordDisambiguate disamb;
-    TFJoinedModel joiner;
-    std::vector<TokenPtr> tokens = tok.analyze(UniString(sentence));
-    std::vector<WordFormPtr> forms = analyzer.analyze(tokens);
-
-    if (opts.disambiguate)
-        disamb.disambiguate(forms);
-
-    bool joined_model_failed = true;
-    if (opts.morphemic_split && opts.context_disambiguate)
-    {
-        joined_model_failed = !joiner.disambiguateAndMorphemicSplit(forms);
-    }
-
-    if (joined_model_failed && (opts.morphemic_split || opts.context_disambiguate))
-    {
-        tf_disambig.disambiguate(forms);
-    }
-
-    if (opts.morphemic_split && (!opts.context_disambiguate || joined_model_failed))
-    {
-        for (auto & form : forms)
-        {
-            morphemic_splitter.split(form);
-        }
-    }
-
-    return formatter->format(forms);
-}
-
-void startWeb(Options& opts){
+void startWeb(Options& opts, FormaterPtr& formatter) {
     mg_init_library(0);
 
     const char *options[] = {
-        "document_root", DOCUMENT_ROOT, "listening_ports", PORT, 0};
+        "document_root", ".", "listening_ports", std::to_string(opts.port).c_str(), 0};
 
     std::vector<std::string> cpp_options;
     for (int i=0; i<(sizeof(options)/sizeof(options[0])-1); i++) {
@@ -187,7 +185,7 @@ void startWeb(Options& opts){
     RootHandler h_root;
     server.addHandler("", h_root);
 
-    WordsHandler h_words;
+    WordsHandler h_words(opts, formatter);
     server.addHandler("/words", h_words);
 
     printf("Run server at http://localhost:%d\n", opts.port);
@@ -223,7 +221,7 @@ int main(int argc, char ** argv)
 
     if (opts.web_mode) {
         formatter = std::make_unique<JSONEachSentenceFormater>(opts.morphemic_split);
-        startWeb(opts);
+        startWeb(opts, formatter);
     } else {
 
         if (opts.format == "TSV")
