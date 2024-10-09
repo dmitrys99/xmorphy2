@@ -50,7 +50,7 @@ struct Options
     bool context_disambiguate = false;
     bool morphemic_split = false;
     std::string format;
-    int port = 8081;
+    int port = 8080;
     bool web_mode = false;
 };
 
@@ -175,9 +175,9 @@ void startWeb(Options& opts, FormaterPtr& formatter) {
         "document_root", ".", "listening_ports", std::to_string(opts.port).c_str(), 0};
 
     std::vector<std::string> cpp_options;
-    for (int i=0; i<(sizeof(options)/sizeof(options[0])-1); i++) {
-        cpp_options.push_back(options[i]);
-    }
+//    for (int i=0; i<(sizeof(options)/sizeof(options[0])-1); i++) {
+//        cpp_options.push_back(options[i]);
+//    }
 
     // CivetServer server(options); // <-- C style start
     CivetServer server(cpp_options); // <-- C++ style start
