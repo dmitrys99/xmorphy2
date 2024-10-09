@@ -106,7 +106,7 @@ class WordsHandler : public CivetHandler
                   "application/json\r\nConnection: close\r\n\r\n");
         if (CivetServer::getParam(conn, "param", s)) {
             std::string res = processSentence(s, opts, formatter);
-            mg_printf(conn, "{\"answer\": \"%s\"}", res.c_str());
+            mg_printf(conn, "{\"answer\": %s}", res.c_str());
         } else {
             mg_printf(conn, "{\"answer\": \"None. Use 'param' POST parameter.\"}");
         }
