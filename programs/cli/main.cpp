@@ -208,17 +208,6 @@ int main(int argc, char ** argv)
     if (!processCommandLineOptions(argc, argv, opts))
         return 1;
 
-    std::istream * is = &cin;
-    std::ostream * os = &cout;
-    if (!opts.input_file.empty())
-    {
-        is = new ifstream(opts.input_file);
-    }
-    if (!opts.output_file.empty())
-    {
-        os = new ofstream(opts.output_file);
-    }
-    SentenceSplitter ssplitter(*is);
 
     FormaterPtr formatter;
 
@@ -226,6 +215,17 @@ int main(int argc, char ** argv)
         formatter = std::make_unique<JSONEachSentenceFormater>(opts.morphemic_split);
         startWeb(opts, formatter);
     } else {
+        std::istream * is = &cin;
+        std::ostream * os = &cout;
+        if (!opts.input_file.empty())
+        {
+            is = new ifstream(opts.input_file);
+        }
+        if (!opts.output_file.empty())
+        {
+            os = new ofstream(opts.output_file);
+        }
+        SentenceSplitter ssplitter(*is);
 
         if (opts.format == "TSV")
             formatter = std::make_unique<TSVFormater>(opts.morphemic_split);
